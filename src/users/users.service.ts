@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,7 +16,7 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const existingUser = await this.findByUserName(createUserDto.userName);
+    const existingUser = await this.findOneByUserName(createUserDto.userName);
 
     if (existingUser) {
       throw new ConflictException('Invalid userName');
@@ -21,20 +25,30 @@ export class UsersService {
     const user = this.userRepo.create(createUserDto);
     await this.userRepo.save(user);
     const { password, ...result } = user;
-    
+
     return result;
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(): Promise<User[] | null> {
+    return await this.userRepo.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOneById(id: number): Promise<User | undefined> {
+    const user = await this.userRepo.findOne({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return user;
   }
 
-  async findByUserName(userName: string): Promise<User | undefined> {
-    return await this.userRepo.findOne({ where: { userName } });
+  async findOneByUserName(userName: string): Promise<User | undefined> {
+    const user = await this.userRepo.findOne({ where: { userName } });
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+    return user;
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
