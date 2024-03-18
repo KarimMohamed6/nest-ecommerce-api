@@ -17,7 +17,7 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     const existingUser = await this.findOneByUserName(createUserDto.userName);
-
+    
     if (existingUser) {
       throw new ConflictException('Invalid userName');
     }
@@ -44,10 +44,6 @@ export class UsersService {
 
   async findOneByUserName(userName: string): Promise<User | undefined> {
     const user = await this.userRepo.findOne({ where: { userName } });
-
-    if (!user) {
-      throw new NotFoundException();
-    }
     return user;
   }
 

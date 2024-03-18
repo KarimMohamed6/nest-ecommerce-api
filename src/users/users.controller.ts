@@ -7,11 +7,17 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { CurrentUser } from 'src/utility/decorators/current-user.decorator';
+import { AuthenticationGuard } from 'src/auth/guards/authentication.guard';
+import { Role } from 'src/utility/decorators/authorize-roles.decorator';
+import { Roles } from 'src/utility/common/user-roles.enum';
+import { AuthorizeGuard } from 'src/auth/guards/Authorization.guard';
 
 @Controller('users')
 export class UsersController {
@@ -22,6 +28,8 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @Role(Roles.ADMIN)
+  @UseGuards(AuthenticationGuard, AuthorizeGuard)
   @Get('all')
   async findAll(): Promise<User[]> {
     return await this.usersService.findAll();
@@ -45,5 +53,11 @@ export class UsersController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
+  }
+
+  @UseGuards(AuthenticationGuard)
+  @Get('me')
+  async getProfile(@CurrentUser() currentUser: User): Promise<User> {
+    return currentUser;
   }
 }

@@ -24,7 +24,12 @@ export class User {
   @Column()
   password: string;
 
-  @Column({ type: 'enum', enum: Roles, array: true, default: [Roles.USER] })
+  @Column({
+    type: 'enum',
+    enum: Roles,
+    array: true,
+    default: [Roles.USER],
+  })
   roles: Roles[];
 
   @CreateDateColumn()
@@ -32,7 +37,7 @@ export class User {
 
   @UpdateDateColumn()
   updateedAt: Timestamp;
-  
+
   @BeforeInsert()
   async hashPassword() {
     this.password = await bcrypt.hash(this.password, 10);
